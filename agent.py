@@ -33,7 +33,7 @@ class LearningAgent(Agent):
         self.planner.route_to(destination)
         self.testing = testing
         
-        # epsilon is a logistic function that gives roughly equal numbers of pure exploration, mixed exp/exp, and pure exploitation trials.       
+        # epsilon is a logistic function that gives roughly equal numbers of pure exploration, mixed exp/exp, and pure exploitation trials. Adjustable with the constants here and with epsilon tolerance.   
         self.epsilon = (1./(1.+math.exp(0.1*(self.trial - 50)))) 
         
         # epsilon decays linearly over 60 trials
@@ -100,14 +100,17 @@ class LearningAgent(Agent):
             if self.epsilon > random.random():                                 # Q value (p = 1 - epsilon)
                 action = random.choice(self.valid_actions)
             else:
+                goodOptions = []
                 maxQ = self.get_maxQ(self.state)
                 for option in self.valid_actions:
                     if self.Q[self.state][option] == maxQ:
-                        action = option
-            if not self.testing:                                               # unless we aren't testing and there's an unexplored option,
-                for option in self.valid_actions:                              # in which case pick that!
-                    if self.Q[self.state][option] == 0:
-                        action = option
+                        goodOptions.append(option)                             # in case of ties, randomly choose one of the maxQ actions
+                action = random.choice(goodOptions)
+                
+#            if not self.testing:                                               # unless we aren't testing and there's an unexplored option,
+#                for option in self.valid_actions:                              # in which case pick that! (removed for compliance with rubric)
+#                    if self.Q[self.state][option] == 0:
+#                        action = option
             
         return action
 
@@ -147,7 +150,7 @@ def run():
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment(verbose = True)
+    env = Environment()
     
     ##############
     # Create the driving agent
